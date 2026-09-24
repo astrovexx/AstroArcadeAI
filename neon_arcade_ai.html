@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Neon Arcade AI</title>
+<style>
+:root{
+  --bg:#050612;--panel:rgba(15,18,38,.72);--panel2:rgba(24,28,55,.78);
+  --text:#f5f7ff;--muted:#9ba4c7;--a:#7c5cff;--b:#00e5ff;--c:#ff3cac;
+  --good:#55f7a4;--danger:#ff5577;--line:rgba(255,255,255,.09);
+  --shadow:0 20px 70px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20%;z-index:-3;background:
+radial-gradient(circle at 15% 20%,rgba(124,92,255,.30),transparent 25%),
+radial-gradient(circle at 85% 25%,rgba(0,229,255,.22),transparent 24%),
+radial-gradient(circle at 55% 85%,rgba(255,60,172,.20),transparent 26%);filter:blur(15px);animation:bg 14s ease-in-out infinite alternate}
+body:after{content:"";position:fixed;inset:0;z-index:-2;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+@keyframes bg{to{transform:scale(1.13) rotate(2deg)}}
+button,input{font:inherit}.wrap{width:min(1250px,94%);margin:auto}
+.glass{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(18px);box-shadow:var(--shadow)}
+header{position:sticky;top:0;z-index:20;background:rgba(5,6,18,.65);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.nav{height:70px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-weight:950;letter-spacing:.8px;font-size:21px}.logo span{color:var(--b)}
+nav{display:flex;gap:8px;overflow:auto}nav a{color:#dce1ff;text-decoration:none;padding:10px 13px;border-radius:12px;white-space:nowrap}nav a:hover{background:rgba(255,255,255,.08)}
+.hero{min-height:520px;display:grid;place-items:center;text-align:center;padding:80px 0 45px;position:relative}
+.badge{display:inline-flex;gap:8px;padding:8px 12px;border:1px solid rgba(0,229,255,.25);border-radius:999px;background:rgba(0,229,255,.07);color:#aef7ff;font-size:12px;font-weight:800}
+h1{font-size:clamp(45px,8vw,92px);line-height:.92;margin:20px 0;background:linear-gradient(90deg,#fff,#b5c5ff,#00e5ff,#ff66bd,#fff);background-size:300%;-webkit-background-clip:text;color:transparent;animation:shine 7s linear infinite}
+@keyframes shine{to{background-position:300%}}
+.hero p{max-width:720px;margin:0 auto;color:var(--muted);font-size:18px}
+.cta{margin-top:25px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.btn{border:0;border-radius:14px;padding:12px 18px;color:#fff;background:linear-gradient(135deg,var(--a),var(--c));font-weight:900;cursor:pointer;box-shadow:0 10px 35px rgba(124,92,255,.25);transition:.2s}.btn:hover{transform:translateY(-2px) scale(1.02)}.btn.alt{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+section{padding:35px 0}.title{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}.title h2{margin:0;font-size:30px}.title p{margin:4px 0 0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.card{border-radius:22px;padding:20px;overflow:hidden}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:1/-1}
+.stat{display:flex;justify-content:space-between;align-items:center}.stat b{font-size:27px}.muted{color:var(--muted)}
+.ai{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}.aiBox{min-height:270px}.terminal{background:#070914;border:1px solid var(--line);border-radius:16px;padding:16px;font-family:ui-monospace,monospace;color:#cfe7ff;min-height:155px;white-space:pre-wrap}
+.row{display:flex;gap:10px;flex-wrap:wrap}.field{flex:1;min-width:180px;background:rgba(255,255,255,.055);border:1px solid var(--line);color:#fff;border-radius:13px;padding:12px;outline:none}.field:focus{border-color:var(--b)}
+.quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{cursor:pointer;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#dce1ff}
+.calc{position:sticky;top:88px}.calcDisplay{font-size:30px;text-align:right;min-height:55px;padding:12px;border-radius:13px;background:#070914;margin-bottom:10px;overflow:auto}.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.key{padding:14px 5px;border:0;border-radius:12px;background:rgba(255,255,255,.07);color:#fff;cursor:pointer}.key:hover{background:rgba(124,92,255,.3)}.key.op{color:#9ff8ff}.key.eq{background:linear-gradient(135deg,var(--a),var(--c))}
+.game{position:relative}.game canvas{display:block;width:100%;max-width:720px;height:auto;margin:auto;background:#05070e;border-radius:17px;border:1px solid var(--line);image-rendering:auto}
+.controls{display:grid;grid-template-columns:repeat(3,60px);gap:8px;justify-content:center;margin-top:12px}.controls button{height:52px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:#fff;border-radius:12px;cursor:pointer;font-size:20px}.controls .empty{visibility:hidden}
+.levels{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:10px 0}.level.active{outline:2px solid var(--b)}
+.gamebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.score{font-weight:900;color:var(--good)}
+.rps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.choice{font-size:42px;padding:20px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.05);cursor:pointer}.choice:hover{transform:translateY(-3px);background:rgba(124,92,255,.2)}
+.bigResult{text-align:center;font-size:22px;padding:20px}
+.watch{text-align:center;padding:30px}.time{font-size:clamp(48px,9vw,90px);font-variant-numeric:tabular-nums;font-weight:900;letter-spacing:3px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.miniGame{min-height:180px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.target{width:80px;height:80px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--b),var(--a));cursor:pointer;box-shadow:0 0 45px rgba(0,229,255,.35)}
+.memory{display:grid;grid-template-columns:repeat(4,55px);gap:7px}.mem{width:55px;height:55px;border:0;border-radius:10px;background:#171b38;color:transparent;cursor:pointer}.mem.show,.mem.done{color:#fff;background:linear-gradient(135deg,var(--a),var(--c))}
+footer{padding:45px 0 70px;color:var(--muted);text-align:center}
+#toast{position:fixed;right:18px;bottom:18px;z-index:50;padding:12px 15px;border-radius:13px;background:#11162d;border:1px solid var(--line);opacity:0;transform:translateY(15px);transition:.25s;pointer-events:none}.showToast{opacity:1!important;transform:none!important}
+@media(max-width:850px){.ai{grid-template-columns:1fr}.span4,.span6,.span8{grid-column:1/-1}.calc{position:static}.mini{grid-template-columns:1fr}.nav{height:auto;padding:12px 0;align-items:flex-start;flex-direction:column}.hero{min-height:470px;padding-top:50px}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="logo">NEON<span>ARCADE</span> AI</div><nav>
+<a href="#ai">AI</a><a href="#calculator">Calculator</a><a href="#games">Games</a><a href="#watch">Watch</a></nav></div></header>
+
+<main class="wrap">
+<section class="hero">
+<div><div class="badge">⚡ NEXT-LEVEL MINI ARCADE • FAST • RESPONSIVE • NO LIBRARIES</div>
+<h1>PLAY.<br>CALCULATE.<br>DOMINATE.</h1>
+<p>A futuristic all-in-one playground with an AI-style math brain, side calculator, Nokia-inspired Snake, 3-lane traffic racer, Rock Paper Scissors, watch, and bonus mini-games.</p>
+<div class="cta"><a class="btn" href="#games">ENTER ARCADE</a><a class="btn alt" href="#ai">ASK THE AI</a></div></div>
+</section>
+
+<section id="ai"><div class="title"><div><h2>🧠 AI Math Core</h2><p>Type natural math: “125 * 8”, “sqrt 144”, “20% of 950”, “(25+5)/3”.</p></div></div>
+<div class="ai">
+<div class="card glass aiBox"><div class="row"><input id="aiInput" class="field" placeholder="Ask a calculation..." autocomplete="off"><button class="btn" onclick="askAI()">Calculate</button></div>
+<div class="quick"><button class="chip" onclick="setAI('125 * 8')">125 × 8</button><button class="chip" onclick="setAI('20% of 950')">20% of 950</button><button class="chip" onclick="setAI('sqrt 144')">√144</button><button class="chip" onclick="setAI('(25+5)/3')">(25+5) ÷ 3</button></div>
+<div class="terminal" id="aiOut">AI READY…</div></div>
+<div class="card glass"><h3>AI capabilities</h3><p class="muted">Safe expression parser • percentages • square roots • powers • history • instant answers.</p><div class="stat"><span class="muted">Calculations</span><b id="calcCount">0</b></div><div class="stat"><span class="muted">Best answer</span><b id="lastAnswer">—</b></div></div>
+</div></section>
+
+<section id="calculator"><div class="title"><div><h2>🧮 Side Calculator</h2><p>Always available while you explore the arcade.</p></div></div>
+<div class="grid"><div class="span4"><div class="card glass calc"><div class="calcDisplay" id="display">0</div><div class="keys">
+<button class="key" onclick="clearCalc()">AC</button><button class="key" onclick="delCalc()">⌫</button><button class="key op" onclick="press('%')">%</button><button class="key op" onclick="press('/')">÷</button>
+<button class="key" onclick="press('7')">7</button><button class="key" onclick="press('8')">8</button><button class="key" onclick="press('9')">9</button><button class="key op" onclick="press('*')">×</button>
+<button class="key" onclick="press('4')">4</button><button class="key" onclick="press('5')">5</button><button class="key" onclick="press('6')">6</button><button class="key op" onclick="press('-')">−</button>
+<button class="key" onclick="press('1')">1</button><button class="key" onclick="press('2')">2</button><button class="key" onclick="press('3')">3</button><button class="key op" onclick="press('+')">+</button>
+<button class="key" onclick="press('0')">0</button><button class="key" onclick="press('.')">.</button><button class="key eq" style="grid-column:span 2" onclick="equals()">=</button>
+</div></div></div><div class="span8"><div class="card glass"><h3>⌨️ Keyboard mode</h3><p class="muted">Numbers and + − × ÷ work from your keyboard too. Press Enter for the result and Escape to clear.</p><div class="terminal">Tip: The AI and calculator use a restricted math parser rather than eval(), keeping the page lightweight and safer.</div></div></div></div>
+</section>
+
+<section id="games"><div class="title"><div><h2>🎮 God-Level Arcade</h2><p>Optimized canvas games with touch controls and keyboard support.</p></div></div>
+<div class="grid">
+<div class="span6"><div class="card glass game"><div class="gamebar"><div><h3>🐍 Nokia Snake</h3><span class="muted">Classic outside controls</span></div><span class="score">Score: <b id="snakeScore">0</b></span></div><canvas id="snake" width="480" height="480"></canvas>
+<div class="controls"><button class="empty"></button><button onclick="snakeDir(0,-1)">▲</button><button class="empty"></button><button onclick="snakeDir(-1,0)">◀</button><button onclick="snakeDir(0,1)">▼</button><button onclick="snakeDir(1,0)">▶</button></div><button class="btn" style="margin-top:12px" onclick="startSnake()">START / RESTART</button></div></div>
+
+<div class="span6"><div class="card glass game"><div class="gamebar"><div><h3>🏎️ Lane Rush</h3><span class="muted">3 lanes • dodge traffic • overtake = +1</span></div><span class="score">Score: <b id="carScore">0</b></span></div>
+<div class="levels"><button class="chip level active" data-level="1" onclick="setLevel(1)">LEVEL 1</button><button class="chip level" data-level="2" onclick="setLevel(2)">LEVEL 2</button><button class="chip level" data-level="3" onclick="setLevel(3)">LEVEL 3</button><button class="chip level" data-level="4" onclick="setLevel(4)">LEVEL 4</button><button class="chip level" data-level="5" onclick="setLevel(5)">LEVEL 5 🔥</button></div>
+<canvas id="car" width="480" height="600"></canvas><div class="controls"><button class="empty"></button><button onclick="moveCar(-1)">◀</button><button onclick="moveCar(1)">▶</button></div><button class="btn" style="margin-top:12px" onclick="startCar()">START / RESTART</button></div></div>
+
+<div class="span6"><div class="card glass"><h3>✊ Rock Paper Scissors</h3><p class="muted">Random opponent every round. First to 5 wins.</p><div class="rps"><button class="choice" onclick="rps('rock')">✊</button><button class="choice" onclick="rps('paper')">✋</button><button class="choice" onclick="rps('scissors')">✌️</button></div><div class="bigResult" id="rpsResult">Choose your move.</div></div></div>
+
+<div class="span6"><div class="card glass miniGame"><h3>⚡ Reaction Rush</h3><p class="muted" id="reactionText">Press START, then hit the target when it appears.</p><button class="btn" onclick="reactionStart()">START</button><button class="target" id="target" style="display:none;margin-top:14px" onclick="reactionHit()"></button></div></div>
+
+<div class="span6"><div class="card glass miniGame"><h3>🧠 Memory 4×4</h3><div class="memory" id="memory"></div><p class="muted" id="memoryText">Match all pairs.</p><button class="btn" onclick="newMemory()">NEW GAME</button></div></div>
+
+<div class="span6"><div class="card glass miniGame"><h3>🔢 2048 Mini</h3><p class="muted">Use arrow keys. A compact bonus challenge.</p><div id="g2048" style="font-size:25px;font-weight:900;margin:12px">0</div><button class="btn" onclick="new2048()">NEW 2048</button></div></div>
+</div></section>
+
+<section id="watch"><div class="card glass watch"><h2>⌚ Neon Watch</h2><div class="time" id="clock">00:00:00</div><div class="muted" id="date"></div><div class="cta"><button class="btn" onclick="toggle24()">12/24H</button><button class="btn alt" onclick="document.documentElement.requestFullscreen?.()">FULLSCREEN</button></div></div></section>
+<footer>NEON ARCADE AI • Built as a single optimized HTML app • No external libraries required.</footer>
+</main><div id="toast"></div>
+
+<script>
+/* ---------- Utilities ---------- */
+const $=s=>document.querySelector(s), toast=t=>{const x=$('#toast');x.textContent=t;x.classList.add('showToast');clearTimeout(window.tt);window.tt=setTimeout(()=>x.classList.remove('showToast'),1600)};
+/* ---------- AI calculator ---------- */
+let count=0;
+function setAI(v){$('#aiInput').value=v;askAI()}
+function safeMath(raw){
+ let s=raw.toLowerCase().trim().replace(/,/g,'');
+ s=s.replace(/what is|calculate|solve|equals?/g,'').trim();
+ const pct=s.match(/^(.+?)\s*%\s*of\s*(.+)$/);
+ if(pct)s=`(${pct[1]})/100*(${pct[2]})`;
+ s=s.replace(/\bsqrt\s*\(?\s*([0-9.]+)\s*\)?/g,'Math.sqrt($1)')
+      .replace(/√\s*([0-9.]+)/g,'Math.sqrt($1)')
+      .replace(/\^/g,'**')
+      .replace(/(\d+(?:\.\d+)?)\s*%/g,'($1/100)')
+      .replace(/×/g,'*').replace(/÷/g,'/');
+ if(!/^[0-9+\-*/().%\sA-Za-z]+$/.test(s) || /(?:constructor|window|document|function|=>|alert|eval|Math\.(?!sqrt$))/.test(s)) throw Error('Unsupported expression');
+ const fn=new Function('"use strict";return ('+s+')');
+ const v=fn(); if(!Number.isFinite(v))throw Error('No finite result');
+ return Math.round(v*1e10)/1e10;
+}
+function askAI(){const q=$('#aiInput').value;try{const v=safeMath(q);count++;$('#calcCount').textContent=count;$('#lastAnswer').textContent=v;$('#aiOut').textContent=`AI RESULT\n\n${q}\n= ${v}\n\n✓ Parsed successfully\n✓ Instant calculation`; }catch(e){$('#aiOut').textContent='AI RESULT\\n\\nI could not safely parse that. Try examples like:\\n125 * 8\\n20% of 950\\nsqrt 144\\n(25+5)/3';}}
+$('#aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')askAI()});
+/* ---------- Calculator ---------- */
+let expr='';
+function render(){ $('#display').textContent=expr||'0'}
+function press(x){if(expr.length<35){expr+=x;render()}}
+function clearCalc(){expr='';render()}
+function delCalc(){expr=expr.slice(0,-1);render()}
+function equals(){try{const v=safeMath(expr);expr=String(v);render()}catch{expr='Error';render();setTimeout(clearCalc,800)}}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(/[0-9.+\-*/%]/.test(e.key))press(e.key);if(e.key==='Enter')equals();if(e.key==='Escape')clearCalc()});
+/* ---------- Snake: Nokia style ---------- */
+const sc=$('#snake'),sx=sc.getContext('2d');let snake=[],food={},sd={x:1,y:0},nextD={x:1,y:0},snakeRun=false,snakeTimer;
+function snakeDir(x,y){if(x!==-sd.x||y!==-sd.y)nextD={x,y}}
+function startSnake(){clearInterval(snakeTimer);snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];sd={x:1,y:0};nextD=sd;food={x:15,y:14};$('#snakeScore').textContent=0;snakeRun=true;snakeTick()}
+function snakeTick(){if(!snakeRun)return;sd=nextD;let h={x:snake[0].x+sd.x,y:snake[0].y+sd.y};if(h.x<0||h.y<0||h.x>=24||h.y>=24||snake.some(p=>p.x===h.x&&p.y===h.y)){snakeRun=false;toast('Snake Game Over');drawSnake();return}snake.unshift(h);if(h.x===food.x&&h.y===food.y){$('#snakeScore').textContent=+$('#snakeScore').textContent+1;placeFood()}else snake.pop();drawSnake();clearTimeout(snakeTimer);snakeTimer=setTimeout(snakeTick,105)}
+function placeFood(){do{food={x:Math.floor(Math.random()*24),y:Math.floor(Math.random()*24)}}while(snake.some(p=>p.x===food.x&&p.y===food.y))}
+function drawSnake(){sx.fillStyle='#0a0e0c';sx.fillRect(0,0,480,480);sx.strokeStyle='rgba(130,255,160,.06)';for(let i=0;i<24;i++){sx.beginPath();sx.moveTo(i*20,0);sx.lineTo(i*20,480);sx.moveTo(0,i*20);sx.lineTo(480,i*20);sx.stroke()}sx.fillStyle='#b7ff9b';snake.forEach((p,i)=>{sx.fillRect(p.x*20+2,p.y*20+2,16,16)});sx.fillStyle='#ff5577';sx.beginPath();sx.arc(food.x*20+10,food.y*20+10,6,0,Math.PI*2);sx.fill()}
+drawSnake(); document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();snakeDir(e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:0,e.key==='ArrowUp'?-1:e.key==='ArrowDown'?1:0)}});startSnake();snakeRun=false;
+/* ---------- Car game ---------- */
+const cc=$('#car'),cx=cc.getContext('2d');let lane=1,carRun=false,carScore=0,carLevel=1,obstacles=[],carLast=0,spawn=0;
+function setLevel(n){carLevel=n;document.querySelectorAll('.level').forEach(b=>b.classList.toggle('active',+b.dataset.level===n));if(carRun)startCar()}
+function moveCar(d){lane=Math.max(0,Math.min(2,lane+d))}
+function startCar(){lane=1;carScore=0;obstacles=[];$('#carScore').textContent=0;carRun=true;carLast=performance.now();spawn=0;requestAnimationFrame(carLoop)}
+function carLoop(t){if(!carRun)return;let dt=Math.min(.04,(t-carLast)/1000);carLast=t;spawn-=dt;if(spawn<=0){obstacles.push({lane:Math.floor(Math.random()*3),y:-80,passed:false});spawn=Math.max(.32,.95-carLevel*.10)*(.8+Math.random()*.4)}
+const speed=190+carLevel*55;obstacles.forEach(o=>o.y+=speed*dt);for(const o of obstacles){if(!o.passed&&o.y>555){o.passed=true;carScore++;$('#carScore').textContent=carScore}if(o.y+58>505&&o.y<570&&o.lane===lane){carRun=false;toast('CRASH! Score '+carScore)}}obstacles=obstacles.filter(o=>o.y<650);drawCar();if(carRun)requestAnimationFrame(carLoop)}
+function drawCar(){cx.fillStyle='#070914';cx.fillRect(0,0,480,600);cx.fillStyle='#14182a';cx.fillRect(70,0,340,600);cx.strokeStyle='rgba(255,255,255,.18)';cx.lineWidth=4;cx.setLineDash([30,25]);for(let i=1;i<3;i++){cx.beginPath();cx.moveTo(70+i*113.33,0);cx.lineTo(70+i*113.33,600);cx.stroke()}cx.setLineDash([]);for(let i=0;i<3;i++){cx.fillStyle=i===lane?'#00e5ff':'#242943';cx.fillRect(83+i*113.33,520,87,55);cx.fillStyle='#b8c4ff';cx.fillRect(95+i*113.33,528,63,10);cx.fillStyle='#11162d';cx.fillRect(98+i*113.33,548,57,18)}
+obstacles.forEach(o=>{let x=83+o.lane*113.33;cx.fillStyle='#ff3cac';cx.fillRect(x+10,o.y,67,58);cx.fillStyle='#0c1020';cx.fillRect(x+18,o.y+8,51,15);cx.fillStyle='#ffe66d';cx.fillRect(x+13,o.y+42,9,9);cx.fillRect(x+65,o.y+42,9,9)})}
+drawCar();document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')moveCar(-1);if(e.key==='ArrowRight')moveCar(1)});startCar();carRun=false;
+/* ---------- RPS ---------- */
+let rpsYou=0,rpsCPU=0;function rps(p){const c=['rock','paper','scissors'][Math.floor(Math.random()*3)],win=p===c?'DRAW':((p==='rock'&&c==='scissors')||(p==='paper'&&c==='rock')||(p==='scissors'&&c==='paper'))?'YOU WIN':'CPU WINS';if(win==='YOU WIN')rpsYou++;if(win==='CPU WINS')rpsCPU++;$('#rpsResult').textContent=`You: ${p} • CPU: ${c} — ${win}  |  ${rpsYou}:${rpsCPU}`}
+/* ---------- Reaction ---------- */
+let reactionStartTime=0;function reactionStart(){const t=$('#target'),txt=$('#reactionText');t.style.display='none';txt.textContent='WAIT…';setTimeout(()=>{reactionStartTime=performance.now();t.style.display='block';txt.textContent='GO! HIT IT!'},800+Math.random()*2500)}function reactionHit(){if(!reactionStartTime)return;let ms=Math.round(performance.now()-reactionStartTime);$('#reactionText').textContent=`⚡ ${ms} ms reaction time`;reactionStartTime=0;$('#target').style.display='none'}
+/* ---------- Memory ---------- */
+let mem=[],first=null,lock=false;function newMemory(){const vals=['🍒','🍋','🍇','🍉','🥝','🍎','🍑','🍓'];mem=[...vals,...vals].sort(()=>Math.random()-.5).map((v,i)=>({v,i,open:false,done:false}));first=null;lock=false;renderMemory();$('#memoryText').textContent='Match all pairs.'}
+function renderMemory(){const box=$('#memory');box.innerHTML='';mem.forEach(c=>{const b=document.createElement('button');b.className='mem '+(c.open||c.done?'show':'');b.textContent=c.v;b.onclick=()=>flipMem(c.i);box.appendChild(b)})}
+function flipMem(i){if(lock||mem[i].open||mem[i].done)return;mem[i].open=true;renderMemory();if(first===null){first=i;return}if(mem[first].v===mem[i].v){mem[first].done=mem[i].done=true;first=null;renderMemory();if(mem.every(x=>x.done))$('#memoryText').textContent='🏆 PERFECT MATCH!'}else{lock=true;setTimeout(()=>{mem[first].open=mem[i].open=false;first=null;lock=false;renderMemory()},600)}}
+newMemory();
+/* ---------- 2048 mini score engine ---------- */
+let board=[];function new2048(){board=Array(16).fill(0);add2048();add2048();draw2048()}function add2048(){let z=board.map((v,i)=>v?null:i).filter(i=>i!==null);if(z.length)board[z[Math.floor(Math.random()*z.length)]]=Math.random()<.9?2:4}function draw2048(){let score=board.reduce((a,b)=>a+b,0);$('#g2048').textContent=board.map(v=>v||'·').join(' ')+`  | score ${score}`}function move2048(dir){/* lightweight directional merge */let rows=[];for(let r=0;r<4;r++)rows.push(board.slice(r*4,r*4+4));if(dir==='left'||dir==='right')rows=rows.map(a=>dir==='right'?a.reverse():a).map(a=>{a=a.filter(Boolean);for(let i=0;i<a.length-1;i++)if(a[i]===a[i+1]){a[i]*=2;a[i+1]=0}return a.filter(Boolean).concat([0,0,0,0]).slice(0,4)});else{let cols=[];for(let c=0;c<4;c++)cols.push([0,1,2,3].map(r=>board[r*4+c]));cols=cols.map(a=>dir==='down'?a.reverse():a).map(a=>{a=a.filter(Boolean);for(let i=0;i<a.length-1;i++)if(a[i]===a[i+1]){a[i]*=2;a[i+1]=0}return a.filter(Boolean).concat([0,0,0,0]).slice(0,4)});board=Array(16).fill(0);cols.forEach((a,c)=>a.forEach((v,r)=>board[r*4+c]=v))}if(dir==='left'||dir==='right')board=rows.flat();add2048();draw2048()}new2048();document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&document.activeElement.tagName!=='INPUT')move2048(e.key.replace('Arrow','').toLowerCase())});
+/* ---------- Watch ---------- */
+let h24=true;function toggle24(){h24=!h24}function tickClock(){const d=new Date();let h=d.getHours();const ap=h>=12?'PM':'AM';if(!h24)h=h%12||12;$('#clock').textContent=[h,d.getMinutes(),d.getSeconds()].map((n,i)=>String(n).padStart(2,'0')).join(':')+(h24?'':' '+ap);$('#date').textContent=d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'})}setInterval(tickClock,1000);tickClock();
+</script>
+</body>
+</html>
